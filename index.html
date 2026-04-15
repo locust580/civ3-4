@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>L'Homme Moyen — Quetelet's Statistical Society</title>
+  <meta name="description" content="A simulation of Adolphe Quetelet's concept of the average man, 1835">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #0e0c08;
+      color: #d4c8a8;
+      font-family: 'Georgia', serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+    /* ── INTRO OVERLAY ─────────────────────────────────────────────── */
+
+    #intro-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(10, 8, 4, 0.97);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      cursor: pointer;
+    }
+
+    #intro-overlay .intro-inner {
+      max-width: 680px;
+      width: 90%;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+    }
+
+    #intro-overlay .intro-ornament {
+      font-family: 'Crimson Text', 'Georgia', serif;
+      font-size: 13px;
+      letter-spacing: 0.35em;
+      color: #6a5530;
+      text-transform: uppercase;
+    }
+
+    #intro-overlay .intro-title {
+      font-family: 'Crimson Text', 'Georgia', serif;
+      font-size: clamp(48px, 8vw, 80px);
+      font-weight: 600;
+      color: #d4aa50;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      line-height: 1;
+      /* subtle inner glow */
+      text-shadow:
+        0 0 40px rgba(212, 170, 80, 0.25),
+        0 0 80px rgba(212, 170, 80, 0.10);
+    }
+
+    #intro-overlay .intro-subtitle {
+      font-family: 'Crimson Text', 'Georgia', serif;
+      font-size: clamp(18px, 3vw, 26px);
+      font-style: italic;
+      color: #a08850;
+      letter-spacing: 0.08em;
+      margin-top: -16px;
+    }
+
+    #intro-overlay .intro-rule {
+      width: 180px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, #5a4520, transparent);
+      border: none;
+    }
+
+    #intro-overlay .intro-quote {
+      font-family: 'Crimson Text', 'Georgia', serif;
+      font-size: clamp(15px, 2.2vw, 18px);
+      font-style: italic;
+      color: #c4b888;
+      line-height: 1.7;
+      padding: 0 20px;
+    }
+
+    #intro-overlay .intro-attribution {
+      font-size: 12px;
+      color: #7a6840;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-top: -16px;
+    }
+
+    #intro-overlay .intro-body {
+      font-size: clamp(13px, 1.8vw, 15px);
+      color: #a09878;
+      line-height: 1.8;
+      max-width: 560px;
+    }
+
+    #intro-overlay .intro-begin {
+      margin-top: 8px;
+      padding: 14px 44px;
+      background: transparent;
+      border: 1px solid #d4aa50;
+      color: #d4aa50;
+      font-family: 'Crimson Text', 'Georgia', serif;
+      font-size: 15px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.25s, color 0.25s;
+      outline: none;
+    }
+
+    #intro-overlay .intro-begin:hover {
+      background: rgba(212, 170, 80, 0.12);
+    }
+
+    #intro-overlay .intro-hint {
+      font-size: 11px;
+      color: #4a3820;
+      letter-spacing: 0.12em;
+    }
+
+    /* ── HEADER ────────────────────────────────────────────────────── */
+
+    #header {
+      width: 1200px;
+      max-width: 100%;
+      height: 50px;
+      background: #1a1208;
+      border-bottom: 1px solid #3a2a10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      flex-shrink: 0;
+    }
+
+    #header-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 200px;
+    }
+
+    #header-left .title-main {
+      font-family: 'Crimson Text', 'Georgia', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: #d4aa50;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      line-height: 1.1;
+    }
+
+    #header-left .title-sub {
+      font-size: 11px;
+      color: #888;
+      letter-spacing: 0.06em;
+      margin-top: 1px;
+    }
+
+    #header-center {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #year-display {
+      font-family: 'Courier New', 'Lucida Console', monospace;
+      font-size: 20px;
+      color: #d4aa50;
+      letter-spacing: 0.08em;
+    }
+
+    #header-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 200px;
+      justify-content: flex-end;
+    }
+
+    /* ── BUTTONS ───────────────────────────────────────────────────── */
+
+    .ctrl-btn {
+      background: #1e1608;
+      border: 1px solid #5a4020;
+      color: #c4a860;
+      font-family: 'Georgia', serif;
+      font-size: 12px;
+      padding: 5px 10px;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      outline: none;
+      white-space: nowrap;
+    }
+
+    .ctrl-btn:hover {
+      background: #2a1e0c;
+      border-color: #8a6030;
+      color: #d4aa50;
+    }
+
+    .ctrl-btn.active {
+      background: rgba(212, 170, 80, 0.18);
+      border-color: #d4aa50;
+      color: #d4aa50;
+    }
+
+    .ctrl-btn.danger:hover {
+      background: rgba(180, 80, 50, 0.15);
+      border-color: #904030;
+      color: #c06040;
+    }
+
+    /* ── CANVAS WRAPPER ────────────────────────────────────────────── */
+
+    #canvas-wrapper {
+      width: 1200px;
+      max-width: 100%;
+      position: relative;
+      border-left: 2px solid #3a2a10;
+      border-right: 2px solid #3a2a10;
+    }
+
+    #sim-canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: none;
+      cursor: crosshair;
+      background: #0a0806;
+    }
+
+    /* ── REGION SELECTOR ───────────────────────────────────────────── */
+
+    #region-strip {
+      width: 1200px;
+      max-width: 100%;
+      background: #131008;
+      border: 1px solid #3a2a10;
+      border-top: none;
+      display: flex;
+      align-items: center;
+      padding: 8px 14px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    #region-strip .region-label {
+      font-size: 11px;
+      color: #5a5040;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-right: 4px;
+    }
+
+    .region-btn {
+      background: #1a1408;
+      border: 1px solid #3a2a10;
+      color: #8a7850;
+      font-family: 'Georgia', serif;
+      font-size: 12px;
+      padding: 5px 14px;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      outline: none;
+    }
+
+    .region-btn:hover {
+      background: #221a0a;
+      border-color: #6a5030;
+      color: #c4a060;
+    }
+
+    .region-btn.active {
+      background: rgba(212, 170, 80, 0.14);
+      border-color: #a07830;
+      color: #d4aa50;
+    }
+
+    /* ── TOOLTIP ───────────────────────────────────────────────────── */
+
+    #tooltip {
+      position: fixed;
+      pointer-events: none;
+      background: rgba(20, 14, 6, 0.97);
+      border: 1px solid #8a6a3a;
+      padding: 10px 13px;
+      font-size: 12px;
+      line-height: 1.65;
+      color: #c4b888;
+      display: none;
+      z-index: 50;
+      min-width: 170px;
+      max-width: 230px;
+      /* double-border effect */
+      box-shadow:
+        0 0 0 1px #2a1e0a,
+        0 4px 18px rgba(0,0,0,0.7);
+    }
+
+    #tooltip .tt-name {
+      font-family: 'Crimson Text', 'Georgia', serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #d4aa50;
+      margin-bottom: 4px;
+    }
+
+    #tooltip .tt-region {
+      font-size: 11px;
+      color: #7a6840;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    #tooltip .tt-stat {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    #tooltip .tt-stat span:last-child {
+      color: #b09860;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+    }
+
+    #tooltip .tt-exceptional {
+      margin-top: 6px;
+      font-size: 11px;
+      color: #d4aa50;
+      font-style: italic;
+    }
+
+    /* ── FOOTER SPACER ─────────────────────────────────────────────── */
+
+    #footer {
+      width: 1200px;
+      max-width: 100%;
+      padding: 10px 16px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: #3a3020;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── PAUSE VEIL ────────────────────────────────────────────────── */
+
+    #pause-veil {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    #pause-veil.visible {
+      display: flex;
+    }
+
+    #pause-veil span {
+      font-family: 'Crimson Text', 'Georgia', serif;
+      font-size: 22px;
+      letter-spacing: 0.35em;
+      color: rgba(212, 170, 80, 0.55);
+      text-transform: uppercase;
+      text-shadow: 0 0 20px rgba(212, 170, 80, 0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── INTRO OVERLAY ────────────────────────────────────────────── -->
+  <div id="intro-overlay" role="dialog" aria-modal="true" aria-label="Introduction">
+    <div class="intro-inner">
+      <p class="intro-ornament">Bruxelles &middot; MDCCCXXXV</p>
+
+      <h1 class="intro-title">L'Homme Moyen</h1>
+      <p class="intro-subtitle">The Average Man</p>
+
+      <hr class="intro-rule">
+
+      <blockquote class="intro-quote">
+        "If an individual at any given epoch of society possessed all the qualities
+        of the average man, he would represent all that is great, good, or beautiful."
+      </blockquote>
+      <p class="intro-attribution">— Adolphe Quetelet, <em>Sur l'homme</em>, 1835</p>
+
+      <p class="intro-body">
+        In 1835, the Belgian statistician Adolphe Quetelet proposed that a society could be
+        understood through its averages — height, weight, crime, marriage — producing a
+        composite man who embodies the statistical soul of his era.
+        Watch one emerge.
+      </p>
+
+      <button class="intro-begin" id="btn-begin">Begin Simulation</button>
+
+      <p class="intro-hint">Press any key to continue</p>
+    </div>
+  </div>
+
+  <!-- ── HEADER ───────────────────────────────────────────────────── -->
+  <header id="header">
+    <div id="header-left">
+      <span class="title-main">L'Homme Moyen</span>
+      <span class="title-sub">Quetelet's Statistical Society &middot; 1835</span>
+    </div>
+
+    <div id="header-center">
+      <span id="year-display">Year 0</span>
+    </div>
+
+    <div id="header-right">
+      <button class="ctrl-btn" id="btn-play-pause">&#9646;&#9646; Pause</button>
+      <button class="ctrl-btn active" id="btn-speed-1">1&times;</button>
+      <button class="ctrl-btn" id="btn-speed-2">2&times;</button>
+      <button class="ctrl-btn" id="btn-speed-5">5&times;</button>
+      <button class="ctrl-btn" id="btn-speed-10">10&times;</button>
+      <button class="ctrl-btn danger" id="btn-reset">&#8634; Reset</button>
+    </div>
+  </header>
+
+  <!-- ── CANVAS ───────────────────────────────────────────────────── -->
+  <div id="canvas-wrapper">
+    <canvas id="sim-canvas" width="1200" height="700"></canvas>
+    <div id="pause-veil">
+      <span>Paused</span>
+    </div>
+  </div>
+
+  <!-- ── REGION SELECTOR ──────────────────────────────────────────── -->
+  <div id="region-strip">
+    <span class="region-label">Region</span>
+    <button class="region-btn active" data-region="null">All Regions</button>
+    <button class="region-btn" data-region="NORDIC">Northern Reach</button>
+    <button class="region-btn" data-region="ATLANTIC">Atlantic Coast</button>
+    <button class="region-btn" data-region="EASTERN">Eastern Steppe</button>
+    <button class="region-btn" data-region="HIGHLAND">Highland Peaks</button>
+    <button class="region-btn" data-region="SOUTHERN">Southern Lands</button>
+  </div>
+
+  <!-- ── FOOTER ───────────────────────────────────────────────────── -->
+  <footer id="footer">
+    <span>A. Quetelet · <em>Sur l'homme et le d&eacute;veloppement de ses facult&eacute;s</em> · 1835</span>
+    <span>Hover over figures to observe individuals</span>
+  </footer>
+
+  <!-- ── TOOLTIP ──────────────────────────────────────────────────── -->
+  <div id="tooltip" role="tooltip" aria-hidden="true"></div>
+
+  <!-- ── SCRIPTS ──────────────────────────────────────────────────── -->
+  <script src="engine.js"></script>
+  <script src="visual.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      // ── State ──────────────────────────────────────────────────────
+      let paused = false;
+      let speed = 1;
+      let gameInitialised = false;
+      let animFrameId = null;
+
+      const SPEED_STEPS = [1, 2, 5, 10];
+
+      // ── DOM refs ───────────────────────────────────────────────────
+      const introOverlay  = document.getElementById('intro-overlay');
+      const btnBegin      = document.getElementById('btn-begin');
+      const btnPlayPause  = document.getElementById('btn-play-pause');
+      const btnReset      = document.getElementById('btn-reset');
+      const yearDisplay   = document.getElementById('year-display');
+      const canvas        = document.getElementById('sim-canvas');
+      const tooltip       = document.getElementById('tooltip');
+      const pauseVeil     = document.getElementById('pause-veil');
+
+      const speedBtns = {
+        1:  document.getElementById('btn-speed-1'),
+        2:  document.getElementById('btn-speed-2'),
+        5:  document.getElementById('btn-speed-5'),
+        10: document.getElementById('btn-speed-10'),
+      };
+
+      const regionBtns = document.querySelectorAll('.region-btn');
+
+      // ── Region name map ────────────────────────────────────────────
+      const REGION_NAMES = {
+        NORDIC:   'Northern Reach',
+        ATLANTIC: 'Atlantic Coast',
+        EASTERN:  'Eastern Steppe',
+        HIGHLAND: 'Highland Peaks',
+        SOUTHERN: 'Southern Lands',
+      };
+
+      // ── Intro dismissal ────────────────────────────────────────────
+      function dismissIntro() {
+        if (!introOverlay) return;
+        introOverlay.style.transition = 'opacity 0.6s ease';
+        introOverlay.style.opacity = '0';
+        setTimeout(() => {
+          introOverlay.style.display = 'none';
+        }, 620);
+        if (!gameInitialised) {
+          gameInitialised = true;
+          initGame();
+        }
+      }
+
+      btnBegin.addEventListener('click', function (e) {
+        e.stopPropagation();
+        dismissIntro();
+      });
+
+      // Overlay click also dismisses (click on backdrop, not just button)
+      introOverlay.addEventListener('click', dismissIntro);
+
+      // Any keypress dismisses
+      document.addEventListener('keydown', function onFirstKey(e) {
+        // Don't hijack the keypress if it's a modifier-only key
+        if (['Meta', 'Control', 'Alt', 'Shift'].includes(e.key)) return;
+        if (introOverlay.style.display !== 'none') {
+          dismissIntro();
+        }
+      });
+
+      // ── Game initialisation ────────────────────────────────────────
+      function initGame() {
+        SimEngine.init(1200, 700);
+        SimVisual.init(canvas);
+        setupControls();
+        if (animFrameId !== null) {
+          cancelAnimationFrame(animFrameId);
+        }
+        animFrameId = requestAnimationFrame(gameLoop);
+      }
+
+      // ── Game loop ──────────────────────────────────────────────────
+      function gameLoop() {
+        if (!paused) {
+          for (let i = 0; i < speed; i++) {
+            SimEngine.step();
+          }
+        }
+
+        const state = SimEngine.getState();
+        SimVisual.render(state);
+
+        yearDisplay.textContent = 'Year ' + state.year;
+
+        animFrameId = requestAnimationFrame(gameLoop);
+      }
+
+      // ── Controls ───────────────────────────────────────────────────
+      function setSpeed(s) {
+        speed = s;
+        for (const [val, btn] of Object.entries(speedBtns)) {
+          btn.classList.toggle('active', Number(val) === speed);
+        }
+      }
+
+      function setPaused(p) {
+        paused = p;
+        if (paused) {
+          btnPlayPause.innerHTML = '&#9658; Play';
+          btnPlayPause.classList.add('active');
+          pauseVeil.classList.add('visible');
+        } else {
+          btnPlayPause.innerHTML = '&#9646;&#9646; Pause';
+          btnPlayPause.classList.remove('active');
+          pauseVeil.classList.remove('visible');
+        }
+      }
+
+      function resetSim() {
+        if (animFrameId !== null) {
+          cancelAnimationFrame(animFrameId);
+          animFrameId = null;
+        }
+        setPaused(false);
+        setSpeed(1);
+        SimEngine.init(1200, 700);
+        SimVisual.init(canvas);
+        animFrameId = requestAnimationFrame(gameLoop);
+      }
+
+      function setupControls() {
+        // Play / Pause
+        btnPlayPause.addEventListener('click', function () {
+          setPaused(!paused);
+        });
+
+        // Speed buttons
+        document.getElementById('btn-speed-1').addEventListener('click',  function () { setSpeed(1);  });
+        document.getElementById('btn-speed-2').addEventListener('click',  function () { setSpeed(2);  });
+        document.getElementById('btn-speed-5').addEventListener('click',  function () { setSpeed(5);  });
+        document.getElementById('btn-speed-10').addEventListener('click', function () { setSpeed(10); });
+
+        // Reset
+        btnReset.addEventListener('click', resetSim);
+
+        // Region selector
+        regionBtns.forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            regionBtns.forEach(function (b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            const val = btn.dataset.region;
+            SimEngine.setSelectedRegion(val === 'null' ? null : val);
+          });
+        });
+
+        // Canvas: hover tooltip
+        canvas.addEventListener('mousemove', handleCanvasMouseMove);
+        canvas.addEventListener('mouseleave', hideTooltip);
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', handleKeyDown);
+      }
+
+      // ── Tooltip ────────────────────────────────────────────────────
+      function hideTooltip() {
+        tooltip.style.display = 'none';
+        tooltip.setAttribute('aria-hidden', 'true');
+        if (typeof SimVisual.setHover === 'function') {
+          SimVisual.setHover(-1, -1);
+        }
+      }
+
+      function handleCanvasMouseMove(e) {
+        const rect    = canvas.getBoundingClientRect();
+        const scaleX  = canvas.width  / rect.width;
+        const scaleY  = canvas.height / rect.height;
+        const cx      = (e.clientX - rect.left)  * scaleX;
+        const cy      = (e.clientY - rect.top)   * scaleY;
+
+        if (typeof SimVisual.setHover === 'function') {
+          SimVisual.setHover(cx, cy);
+        }
+
+        const state = SimEngine.getState();
+        const meeple = findNearestMeeple(state, cx, cy, 12);
+
+        if (meeple) {
+          showTooltip(meeple, state, e.clientX, e.clientY);
+        } else {
+          hideTooltip();
+        }
+      }
+
+      function findNearestMeeple(state, cx, cy, threshold) {
+        if (!state || !state.meeples) return null;
+        let nearest  = null;
+        let bestDist = threshold * threshold; // compare squared distances
+
+        const meeples = state.meeples;
+        for (let i = 0, len = meeples.length; i < len; i++) {
+          const m = meeples[i];
+          if (m.dead) continue;
+          const dx = m.x - cx;
+          const dy = m.y - cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < bestDist) {
+            bestDist = d2;
+            nearest  = m;
+          }
+        }
+        return nearest;
+      }
+
+      function showTooltip(meeple, state, mouseX, mouseY) {
+        const age   = typeof meeple.age === 'number'
+                        ? Math.round(meeple.age / 60 * 10) / 10
+                        : '?';
+        const regionLabel = REGION_NAMES[meeple.region] || meeple.region || 'Unknown';
+
+        function fmt(v) {
+          return (typeof v === 'number') ? v.toFixed(1) : '—';
+        }
+
+        let html = '';
+        html += '<div class="tt-name">' + escapeHtml(meeple.name || 'Unknown') + '</div>';
+        html += '<div class="tt-region">' + escapeHtml(regionLabel) + '</div>';
+        html += '<div class="tt-stat"><span>Age</span><span>' + age + '</span></div>';
+        html += '<div class="tt-stat"><span>Height</span><span>'  + fmt(meeple.height)       + '</span></div>';
+        html += '<div class="tt-stat"><span>Weight</span><span>'  + fmt(meeple.weight)       + '</span></div>';
+        html += '<div class="tt-stat"><span>Looks</span><span>'   + fmt(meeple.looks)        + '</span></div>';
+        html += '<div class="tt-stat"><span>Intel.</span><span>'  + fmt(meeple.intelligence) + '</span></div>';
+        html += '<div class="tt-stat"><span>Strength</span><span>'+ fmt(meeple.strength)     + '</span></div>';
+
+        if (meeple.isExceptional && meeple.exceptionalTrait) {
+          html += '<div class="tt-exceptional">&#9733; Exceptional: ' + escapeHtml(meeple.exceptionalTrait) + '</div>';
+        }
+
+        tooltip.innerHTML = html;
+        tooltip.style.display = 'block';
+        tooltip.setAttribute('aria-hidden', 'false');
+
+        // Position tooltip: keep it within viewport
+        const pad    = 14;
+        const tw     = tooltip.offsetWidth  || 200;
+        const th     = tooltip.offsetHeight || 120;
+        const vw     = window.innerWidth;
+        const vh     = window.innerHeight;
+
+        let tx = mouseX + pad;
+        let ty = mouseY + pad;
+        if (tx + tw > vw - pad) { tx = mouseX - tw - pad; }
+        if (ty + th > vh - pad) { ty = mouseY - th - pad; }
+        if (tx < pad) { tx = pad; }
+        if (ty < pad) { ty = pad; }
+
+        tooltip.style.left = tx + 'px';
+        tooltip.style.top  = ty + 'px';
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g,  '&amp;')
+          .replace(/</g,  '&lt;')
+          .replace(/>/g,  '&gt;')
+          .replace(/"/g,  '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      // ── Keyboard shortcuts ─────────────────────────────────────────
+      function handleKeyDown(e) {
+        // Do not fire game shortcuts while intro is visible
+        if (introOverlay.style.display !== 'none' &&
+            introOverlay.style.opacity  !== '0') return;
+
+        // Ignore if focus is on an input or button (except Space for pause)
+        const tag = (e.target && e.target.tagName) ? e.target.tagName : '';
+        if ((tag === 'INPUT' || tag === 'TEXTAREA') && e.key !== ' ') return;
+
+        switch (e.key) {
+          case ' ':
+            e.preventDefault();
+            if (gameInitialised) setPaused(!paused);
+            break;
+          case '+':
+          case '=': {
+            e.preventDefault();
+            const idx = SPEED_STEPS.indexOf(speed);
+            const next = SPEED_STEPS[(idx + 1) % SPEED_STEPS.length];
+            setSpeed(next);
+            break;
+          }
+          case '-': {
+            e.preventDefault();
+            const idx = SPEED_STEPS.indexOf(speed);
+            const prev = SPEED_STEPS[(idx - 1 + SPEED_STEPS.length) % SPEED_STEPS.length];
+            setSpeed(prev);
+            break;
+          }
+          case 'r':
+          case 'R':
+            if (gameInitialised) resetSim();
+            break;
+        }
+      }
+
+    }());
+  </script>
+</body>
+</html>
