@@ -674,14 +674,14 @@
       }
 
       function findNearestMeeple(state, cx, cy, threshold) {
-        if (!state || !state.meeples) return null;
+        if (!state || !state.meeple) return null;
         let nearest  = null;
         let bestDist = threshold * threshold; // compare squared distances
 
-        const meeples = state.meeples;
+        const meeples = state.meeple;
         for (let i = 0, len = meeples.length; i < len; i++) {
           const m = meeples[i];
-          if (m.dead) continue;
+          if (!m.alive) continue;
           const dx = m.x - cx;
           const dy = m.y - cy;
           const d2 = dx * dx + dy * dy;
